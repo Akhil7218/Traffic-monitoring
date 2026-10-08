@@ -6,7 +6,7 @@ Equipped with automated e-citation generation, multi-channel citizen notificatio
 
 ---
 
-## 🌟 Key Capabilities & Feature Highlights
+##  Key Capabilities & Feature Highlights
 
 - **Real-Time Video Stream Pipeline**: Supports RTSP/HTTP live network streams, webcam feeds, and multi-format video file uploads (`.mp4`, `.avi`, `.mov`, `.mkv`).
 - **Deep Learning Object Tracking**: Powered by YOLOv8 vision backbones and ByteTrack multi-object tracking for accurate trajectory and spatial analysis.
@@ -20,8 +20,7 @@ Equipped with automated e-citation generation, multi-channel citizen notificatio
 - **Public Citizen Safety Portal**: Masked plate lookup, citation status checking, fine collection transparency, and community safety analytics.
 
 ---
-
-## 🏗️ System Architecture
+##  System Architecture
 
 ```mermaid
 graph TD
@@ -38,7 +37,7 @@ graph TD
 
 ---
 
-## 📁 Repository Structure
+##  Repository Structure
 
 ```text
 traffic-monitoring/
@@ -80,7 +79,7 @@ traffic-monitoring/
 
 ---
 
-## 🛠️ Installation & Setup
+##  Installation & Setup
 
 ### 1. Prerequisites
 - Python 3.10+ installed
@@ -117,7 +116,7 @@ Key configuration parameters in `.env`:
 
 ---
 
-## 🚀 Running the Application
+##  Running the Application
 
 ### Start Web Application Server
 ```bash
