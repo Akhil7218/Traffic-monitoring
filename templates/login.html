@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrafficSentinel AI — Command Center Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-dark: #070a0f;
+      --card-bg: rgba(13, 19, 29, 0.85);
+      --border: rgba(0, 229, 255, 0.18);
+      --border-focus: #00e5ff;
+      --accent-cyan: #00e5ff;
+      --accent-blue: #0066ff;
+      --text-main: #e2e8f0;
+      --text-muted: #64748b;
+      --font-main: 'Outfit', sans-serif;
+      --font-mono: 'Share Tech Mono', monospace;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(0, 102, 255, 0.06) 0%, transparent 50%),
+        linear-gradient(0deg, transparent 24px, rgba(0, 229, 255, 0.02) 25px),
+        linear-gradient(90deg, transparent 24px, rgba(0, 229, 255, 0.02) 25px);
+      background-size: 100% 100%, 100% 100%, 25px 25px, 25px 25px;
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Ambient radar scanning effect */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg at 50% 50%, rgba(0, 229, 255, 0.05) 0deg, transparent 60deg, transparent 360deg);
+      animation: radar 10s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes radar {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 2.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 229, 255, 0.1);
+      backdrop-filter: blur(16px);
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .brand-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.2rem;
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(0, 102, 255, 0.15));
+      border: 1px solid var(--accent-cyan);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+    }
+
+    .brand-icon svg {
+      width: 32px;
+      height: 32px;
+      fill: var(--accent-cyan);
+    }
+
+    .brand-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+
+    .brand-title span {
+      color: var(--accent-cyan);
+    }
+
+    .brand-subtitle {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      margin-bottom: 1.8rem;
+    }
+
+    .badge-admin {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 229, 255, 0.08);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 20px;
+      margin-bottom: 1.8rem;
+      letter-spacing: 1px;
+    }
+
+    .badge-admin .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 8px var(--accent-cyan);
+    }
+
+    .input-group {
+      margin-bottom: 1.2rem;
+      text-align: left;
+    }
+
+    .input-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .input-field {
+      width: 100%;
+      background: rgba(7, 10, 15, 0.8);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.85rem 1.1rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    .input-field:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #000;
+      border: none;
+      padding: 0.9rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.25);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 229, 255, 0.4);
+    }
+
+    .demo-section {
+      margin-top: 1.5rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-demo {
+      width: 100%;
+      background: transparent;
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      color: var(--accent-cyan);
+      padding: 0.8rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-demo:hover {
+      background: rgba(0, 229, 255, 0.1);
+      border-color: var(--accent-cyan);
+    }
+
+    .error-alert {
+      background: rgba(255, 45, 85, 0.15);
+      border: 1px solid rgba(255, 45, 85, 0.4);
+      color: #ff4444;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .citizen-link {
+      display: inline-block;
+      margin-top: 1.8rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .citizen-link:hover {
+      color: var(--accent-cyan);
+    }
+
+    .spin { display:none; width:14px; height:14px; border:2px solid rgba(0,229,255,0.3); border-top-color:#00e5ff; border-radius:50%; }
+    .spin.active { display:block; animation:spin 0.6s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
+      </svg>
+    </div>
+    
+    <div class="brand-title">TrafficSentinel <span>AI</span></div>
+    <div class="brand-subtitle">AI Traffic Safety & Enforcement Platform</div>
+
+    <div class="badge-admin">
+      <span class="dot"></span>
+      RESTRICTED SYSTEM ACCESS
+    </div>
+
+    {% if error %}
+    <div class="error-alert">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" id="login-form">
+      <div class="input-group">
+        <label class="input-label" for="pw-input">ADMINISTRATOR PASSWORD</label>
+        <input type="password" name="password" id="pw-input" class="input-field" placeholder="••••••••••••" autofocus required>
+      </div>
+      <button type="submit" class="btn-submit">AUTHENTICATE</button>
+    </form>
+
+    {% if demo_enabled %}
+    <div class="demo-section">
+      <form method="POST" id="demo-form" style="display:none">
+        <input type="hidden" name="password" value="{{ demo_password }}">
+      </form>
+      <button class="btn-demo" id="demo-btn" onclick="submitDemo(this)">
+        <span class="spin" id="demo-spin"></span>
+        <span id="demo-label">▶ Explore Read-Only Demo</span>
+      </button>
+    </div>
+    {% endif %}
+
+    <a class="citizen-link" href="/citizen">← Access Public Citizen Portal</a>
+  </div>
+
+  <script>
+    function submitDemo(btn) {
+      btn.disabled = true;
+      document.getElementById('demo-spin').classList.add('active');
+      document.getElementById('demo-label').textContent = 'Authenticating...';
+      document.getElementById('demo-form').submit();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TrafficSentinel AI — Command Center Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg-main:     #070a0f;
+    --panel-bg:    rgba(13, 19, 29, 0.85);
+    --card-bg:     #0d1420;
+    --card-hover:  #111b2b;
+    --border:      rgba(0, 229, 255, 0.15);
+    --border-bright:#00e5ff;
+    --accent-cyan: #00e5ff;
+    --accent-blue: #0066ff;
+    --red-viol:    #ff2d55;
+    --orange-viol: #ff9f0a;
+    --green-status:#00ff88;
+    --text-primary:#f1f5f9;
+    --text-muted:  #64748b;
+    --font-sans:   'Outfit', sans-serif;
+    --font-mono:   'Share Tech Mono', monospace;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  
+  html, body {
+    height: 100%;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  /* Grid overlay effect */
+  body::before {
+    content:''; position:fixed; inset:0;
+    background:
+      linear-gradient(0deg, transparent 24px, rgba(0, 229, 255, 0.015) 25px),
+      linear-gradient(90deg, transparent 24px, rgba(0, 229, 255, 0.015) 25px);
+    background-size: 25px 25px;
+    pointer-events:none; z-index:9999;
+  }
+
+  /* ── LAYOUT ── */
+  .app-container {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: rgba(10, 15, 24, 0.95);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 0.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .brand-logo-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(0, 102, 255, 0.2));
+    border: 1px solid var(--accent-cyan);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+  }
+
+  .brand-logo-icon svg { width: 20px; height: 20px; fill: var(--accent-cyan); }
+
+  .brand-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .brand-name span { color: var(--accent-cyan); }
+  .brand-sub { font-size: 0.65rem; color: var(--text-muted); font-family: var(--font-mono); letter-spacing: 1px; }
+
+  .nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .nav-item svg { width: 18px; height: 18px; fill: currentColor; }
+
+  .nav-item:hover {
+    color: var(--text-primary);
+    background: rgba(0, 229, 255, 0.05);
+    border-color: rgba(0, 229, 255, 0.15);
+  }
+
+  .nav-item.active {
+    color: #000;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+    font-weight: 700;
+    box-shadow: 0 0 16px rgba(0, 229, 255, 0.3);
+  }
+  .nav-item.active svg { fill: #000; }
+
+  .nav-badge {
+    margin-left: auto;
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+  }
+
+  .sidebar-user {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .user-info { font-size: 0.8rem; }
+  .user-name { font-weight: 700; color: #fff; }
+  .user-role { font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+  .btn-logout {
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(255, 45, 85, 0.15);
+    border: 1px solid rgba(255, 45, 85, 0.3);
+    color: var(--red-viol);
+    font-size: 0.75rem;
+    text-decoration: none;
+    font-family: var(--font-mono);
+    transition: all 0.2s;
+  }
+  .btn-logout:hover { background: var(--red-viol); color: #fff; }
+
+  /* ── MAIN CONTENT AREA ── */
+  .main-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* ── TOP HEADER BAR ── */
+  .top-header {
+    height: 64px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(13, 19, 29, 0.8);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+  }
+
+  .header-breadcrumb {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  .header-breadcrumb span { color: var(--accent-cyan); font-weight: 700; }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .clock-display {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent-cyan);
+    background: rgba(0, 229, 255, 0.06);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 6px;
+  }
+
+  .system-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--green-status);
+    background: rgba(0, 255, 136, 0.08);
+    border: 1px solid rgba(0, 255, 136, 0.25);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  .status-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green-status);
+    box-shadow: 0 0 10px var(--green-status);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .btn-export {
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-export:hover { background: var(--accent-cyan); color: #000; box-shadow: 0 0 12px rgba(0, 229, 255, 0.4); }
+
+  /* ── CONTENT BODY ── */
+  .content-body {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+  }
+
+  /* ── STATS CARDS GRID ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2rem;
+  }
+
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content:''; position: absolute; top:0; left:0; width:4px; height:100%;
+    background: var(--card-accent, var(--accent-cyan));
+  }
+
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--card-accent, var(--accent-cyan));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .stat-info { display: flex; flex-direction: column; }
+  .stat-val { font-family: var(--font-mono); font-size: 2.2rem; font-weight: 700; color: #fff; line-height: 1.1; }
+  .stat-lbl { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 4px; }
+
+  .stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+  }
+
+  /* ── DASHBOARD MAIN GRID (VIDEO + ALERTS) ── */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  /* ── CINEMATIC MONITORING PANEL ── */
+  .video-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+  }
+
+  .video-header {
+    padding: 1rem 1.25rem;
+    background: rgba(7, 10, 15, 0.8);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .video-title-group { display: flex; align-items: center; gap: 10px; }
+  .video-title { font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #fff; }
+  .video-cam-badge { font-family: var(--font-mono); font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); color: var(--accent-cyan); }
+
+  .video-live-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--red-viol);
+    background: rgba(255, 45, 85, 0.1);
+    border: 1px solid rgba(255, 45, 85, 0.3);
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+
+  .video-viewport {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .video-viewport img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* Overlay HUD elements on video */
+  .hud-top-left {
+    position: absolute; top: 12px; left: 14px;
+    font-family: var(--font-mono); font-size: 0.75rem;
+    color: var(--accent-cyan); background: rgba(0,0,0,0.7);
+    padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(0,229,255,0.3);
+    backdrop-filter: blur(4px); pointer-events: none;
+  }
+
+  .hud-bottom-right {
+    position: absolute; bottom: 12px; right: 14px;
+    font-family: var(--font-mono); font-size: 0.75rem;
+    color: var(--green-status); background: rgba(0,0,0,0.7);
+    padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(0,255,136,0.3);
+    backdrop-filter: blur(4px); pointer-events: none;
+  }
+
+  /* Empty State Placeholder */
+  .idle-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--text-muted);
+  }
+
+  .radar-spinner {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent-cyan);
+    animation: spin 3s linear infinite;
+    margin-bottom: 1.2rem;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .idle-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem; }
+  .idle-desc { font-size: 0.85rem; max-width: 360px; line-height: 1.5; }
+
+  /* Controls Footer */
+  .video-controls-bar {
+    padding: 1.1rem 1.25rem;
+    background: rgba(7, 10, 15, 0.9);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .video-select {
+    flex: 1;
+    min-width: 180px;
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    outline: none;
+    cursor: pointer;
+  }
+  .video-select:focus { border-color: var(--accent-cyan); }
+
+  .btn-action {
+    padding: 0.65rem 1.2rem;
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+    color: #000;
+    box-shadow: 0 0 14px rgba(0, 229, 255, 0.25);
+  }
+  .btn-start:hover { transform: translateY(-1px); box-shadow: 0 0 22px rgba(0, 229, 255, 0.4); }
+
+  .btn-stop {
+    background: rgba(255, 45, 85, 0.15);
+    border: 1px solid rgba(255, 45, 85, 0.4);
+    color: var(--red-viol);
+  }
+  .btn-stop:hover { background: var(--red-viol); color: #fff; }
+
+  .btn-upload {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+  .btn-upload:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+  /* ── LIVE VIOLATION ALERTS PANEL ── */
+  .alerts-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 520px;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+  }
+
+  .alerts-header {
+    padding: 1rem 1.25rem;
+    background: rgba(7, 10, 15, 0.8);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .alerts-title { font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #fff; }
+
+  .alerts-count-tag {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(255, 45, 85, 0.15);
+    border: 1px solid rgba(255, 45, 85, 0.3);
+    color: var(--red-viol);
+  }
+
+  .alerts-feed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 600px;
+  }
+
+  .v-card {
+    background: rgba(7, 10, 15, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+  }
+
+  .v-card:hover {
+    border-color: rgba(0, 229, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .v-thumb {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    display: block;
+    background: #000;
+  }
+
+  .v-body { padding: 1rem; }
+
+  .v-badge-group { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+
+  .v-badge {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .v-badge.no-helmet { background: rgba(255, 45, 85, 0.15); border: 1px solid rgba(255, 45, 85, 0.4); color: var(--red-viol); }
+  .v-badge.triple { background: rgba(255, 159, 10, 0.15); border: 1px solid rgba(255, 159, 10, 0.4); color: var(--orange-viol); }
+  .v-badge.wrong-way { background: rgba(255, 45, 85, 0.25); border: 1px solid rgba(255, 45, 85, 0.6); color: #ff4444; }
+
+  .v-plate-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .v-plate {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    background: rgba(0, 229, 255, 0.08);
+    border: 1px solid rgba(0, 229, 255, 0.25);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  .v-fine {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: #ffd60a;
+    font-size: 0.95rem;
+  }
+
+  .v-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    margin-top: 6px;
+  }
+
+  .v-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .btn-v-action {
+    padding: 6px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+
+  .btn-v-detail {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: rgba(0, 229, 255, 0.3);
+    color: var(--accent-cyan);
+  }
+  .btn-v-detail:hover { background: var(--accent-cyan); color: #000; }
+
+  .btn-v-paid {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: rgba(0, 255, 136, 0.3);
+    color: var(--green-status);
+  }
+  .btn-v-paid:hover { background: var(--green-status); color: #000; }
+  .btn-v-paid.is-paid { background: rgba(255,255,255,0.05); border-color: var(--border); color: var(--text-muted); cursor: default; }
+
+  /* ── MODALS ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal-window {
+    background: var(--card-bg);
+    border: 1px solid var(--border-bright);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    padding: 1.8rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0, 229, 255, 0.2);
+  }
+
+  .modal-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-title { font-size: 1.1rem; font-weight: 700; color: #fff; letter-spacing: 1px; }
+  .modal-close { cursor: pointer; color: var(--text-muted); font-size: 1.2rem; transition: color 0.2s; }
+  .modal-close:hover { color: #fff; }
+
+  .form-group { margin-bottom: 1.2rem; }
+  .form-lbl { display: block; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; }
+  .form-input-text { width: 100%; background: var(--bg-main); border: 1px solid var(--border); color: #fff; padding: 0.75rem; border-radius: 8px; font-family: var(--font-sans); outline: none; }
+  .form-input-text:focus { border-color: var(--accent-cyan); }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    text-align: center;
+    background: rgba(7, 10, 15, 0.5);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .drop-zone:hover { border-color: var(--accent-cyan); background: rgba(0, 229, 255, 0.03); }
+
+  /* Detail Modal Specifics */
+  .evidence-preview-img { width: 100%; height: 220px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1rem; background: #000; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.2rem; font-size: 0.85rem; }
+  .detail-item { background: rgba(7, 10, 15, 0.6); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); }
+  .detail-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+  .detail-val { font-weight: 700; color: #fff; margin-top: 2px; }
+
+  /* Responsive Adjustments */
+  @media (max-width: 1200px) {
+    .app-container { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- ── LEFT SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">TRAFFIC <span>MONITORING</span></div>
+        <div class="brand-sub">AI COMMAND CENTER</div>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <a class="nav-item active" href="/">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" href="#live-monitoring-card">
+        <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+        Live Streams
+      </a>
+      <a class="nav-item" href="#violations-list">
+        <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+        Violations
+      </a>
+      <a class="nav-item" href="/analytics">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2v-10h2v10zm4 0h-2v-4h2v4z"/></svg>
+        Analytics
+      </a>
+      <a class="nav-item" href="/citizen">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        Citizen Portal
+      </a>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        Reports
+        <span class="nav-badge">SOON</span>
+      </a>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        Settings
+        <span class="nav-badge">SOON</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-info">
+        <div class="user-name">Admin Officer</div>
+        <div class="user-role">SYSTEM AUTHENTICATED</div>
+      </div>
+      <a class="btn-logout" href="/logout">Logout</a>
+    </div>
+  </aside>
+
+  <!-- ── MAIN WRAPPER ── -->
+  <div class="main-wrapper">
+    <!-- Top Header Bar -->
+    <header class="top-header">
+      <div class="header-breadcrumb">
+        SYSTEM / <span>AI COMMAND DASHBOARD</span>
+      </div>
+      <div class="header-controls">
+        <div class="clock-display" id="live-clock">--:--:--</div>
+        <div class="system-status">
+          <span class="status-pulse"></span>
+          SYSTEM ONLINE
+        </div>
+        <a class="btn-export" href="/export">📥 Export CSV Report</a>
+      </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="content-body">
+      <!-- Statistics Row -->
+      <section class="stats-grid">
+        <div class="stat-card" style="--card-accent: #00e5ff;">
+          <div class="stat-info">
+            <div class="stat-val" id="stat-total">0</div>
+            <div class="stat-lbl">Total Violations</div>
+          </div>
+          <div class="stat-icon-wrapper">🚨</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent: #ff2d55;">
+          <div class="stat-info">
+            <div class="stat-val" id="stat-no-helmet">0</div>
+            <div class="stat-lbl">No Helmet</div>
+          </div>
+          <div class="stat-icon-wrapper">🪖</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent: #ff9f0a;">
+          <div class="stat-info">
+            <div class="stat-val" id="stat-triple">0</div>
+            <div class="stat-lbl">Triple Riding</div>
+          </div>
+          <div class="stat-icon-wrapper">👥</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent: #ff4444;">
+          <div class="stat-info">
+            <div class="stat-val" id="stat-wrong-way">0</div>
+            <div class="stat-lbl">Wrong Way</div>
+          </div>
+          <div class="stat-icon-wrapper">⛔</div>
+        </div>
+      </section>
+
+      <!-- Dashboard Grid: Video Feed + Live Alerts -->
+      <section class="dashboard-grid">
+        <!-- Center Monitoring Column -->
+        <div class="video-card" id="live-monitoring-card">
+          <div class="video-header">
+            <div class="video-title-group">
+              <div class="video-title">Live Traffic Surveillance Feed</div>
+              <div class="video-cam-badge" id="cam-badge-label">CAM 01 · MAIN FEED</div>
+            </div>
+            <div class="video-live-tag" id="video-live-status">
+              <span style="width:6px;height:6px;border-radius:50%;background:#ff2d55;animation:pulse 1s infinite"></span>
+              LIVE STREAM
+            </div>
+          </div>
+
+          <div class="video-viewport">
+            <img id="video-stream-img" src="/video_feed" alt="Live Camera Stream" onerror="handleStreamError(this)"/>
+            
+            <div class="hud-top-left" id="hud-cam-id">FEED: ACTIVE STREAM</div>
+            <div class="hud-bottom-right" id="hud-fps-info">AI INFERENCE ACTIVE</div>
+
+            <!-- Idle Empty State Overlay (hidden when streaming) -->
+            <div class="idle-placeholder" id="idle-placeholder" style="display:none;">
+              <div class="radar-spinner"></div>
+              <div class="idle-title">NO ACTIVE MONITORING STREAM</div>
+              <div class="idle-desc">Select an available video source or upload a video file below to begin automated detection.</div>
+            </div>
+          </div>
+
+          <div class="video-controls-bar">
+            <select class="video-select" id="video-select">
+              <option value="">-- Select Input Video Source --</option>
+              {% for v in videos %}
+              <option value="{{ v }}">{{ v }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn-action btn-start" onclick="startSelectedVideo()">▶ START PROCESSING</button>
+            <button class="btn-action btn-stop" onclick="stopVideo()">⏹ STOP ALL</button>
+            <button class="btn-action btn-upload" onclick="openUploadModal()">📤 UPLOAD VIDEO</button>
+            <button class="btn-action btn-upload" onclick="openAddCameraModal()">+ ADD RTSP</button>
+          </div>
+        </div>
+
+        <!-- Right Side: Recent Violations Panel -->
+        <div class="alerts-card">
+          <div class="alerts-header">
+            <div class="alerts-title">Recent Violation Alerts</div>
+            <div class="alerts-count-tag" id="alerts-count-badge">0 NEW</div>
+          </div>
+          
+          <div class="alerts-feed" id="violations-list">
+            <div style="text-align:center; padding:3rem 1rem; color:var(--text-muted);" id="feed-empty-state">
+              <div style="font-size:2.5rem; margin-bottom:0.8rem; opacity:0.4;">🛡️</div>
+              <div style="font-weight:700; color:#fff; margin-bottom:4px;">NO VIOLATIONS LOGGED</div>
+              <div style="font-size:0.8rem;">Detected traffic violations will appear here in real-time.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Modal 1: Upload Video -->
+<div class="modal-overlay" id="upload-modal">
+  <div class="modal-window">
+    <div class="modal-header-row">
+      <div class="modal-title">Upload Input Video</div>
+      <div class="modal-close" onclick="closeUploadModal()">✕</div>
+    </div>
+    <div class="form-group">
+      <label class="form-lbl">Select Traffic Video File</label>
+      <div class="drop-zone" onclick="document.getElementById('upload-file-input').click()">
+        <div style="font-size:2rem; margin-bottom:8px;">📹</div>
+        <div style="font-weight:700; color:#fff; margin-bottom:4px;">Click or Drag & Drop Video</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Supported: MP4, AVI, MOV, MKV</div>
+      </div>
+      <input type="file" id="upload-file-input" style="display:none;" accept="video/*" onchange="fileSelected(this)"/>
+    </div>
+    <div id="file-chosen-text" style="font-family:var(--font-mono); font-size:0.8rem; color:var(--accent-cyan); margin-bottom:12px;"></div>
+    <div id="upload-status-text" style="font-size:0.85rem; color:var(--accent-cyan); margin-bottom:12px;"></div>
+    <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <button class="btn-action btn-stop" onclick="closeUploadModal()">Cancel</button>
+      <button class="btn-action btn-start" onclick="submitUploadVideo()">Upload & Select</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Add RTSP Camera -->
+<div class="modal-overlay" id="add-cam-modal">
+  <div class="modal-window">
+    <div class="modal-header-row">
+      <div class="modal-title">Connect Stream / RTSP Camera</div>
+      <div class="modal-close" onclick="closeAddCameraModal()">✕</div>
+    </div>
+    <div class="form-group">
+      <label class="form-lbl">RTSP / HTTP Stream URL</label>
+      <input type="text" class="form-input-text" id="cam-source-input" placeholder="rtsp://admin:pass@192.168.1.100:554/h264"/>
+    </div>
+    <div class="form-group">
+      <label class="form-lbl">Camera Junction Label</label>
+      <input type="text" class="form-input-text" id="cam-label-input" placeholder="Junction CCTV 04"/>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <button class="btn-action btn-stop" onclick="closeAddCameraModal()">Cancel</button>
+      <button class="btn-action btn-start" onclick="submitAddCamera()">Connect Camera</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3: Evidence & Violation Details -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal-window" style="max-width:560px;">
+    <div class="modal-header-row">
+      <div class="modal-title">Violation Evidence Detail</div>
+      <div class="modal-close" onclick="closeDetailModal()">✕</div>
+    </div>
+    <img id="modal-ev-img" class="evidence-preview-img" src="" alt="Evidence Image"/>
+    <div class="detail-grid">
+      <div class="detail-item">
+        <div class="detail-label">Violation Type</div>
+        <div class="detail-val" id="modal-v-type" style="color:var(--red-viol);">--</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Detected Plate</div>
+        <div class="detail-val" id="modal-v-plate" style="color:var(--accent-cyan); font-family:var(--font-mono);">--</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Vehicle Owner</div>
+        <div class="detail-val" id="modal-v-owner">--</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Penalty Fine</div>
+        <div class="detail-val" id="modal-v-fine" style="color:#ffd60a;">--</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Timestamp</div>
+        <div class="detail-val" id="modal-v-time">--</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Camera Source</div>
+        <div class="detail-val" id="modal-v-source">--</div>
+      </div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <a id="modal-challan-link" class="btn-action btn-start" href="#" target="_blank">⬇ DOWNLOAD PDF CHALLAN</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  let maxKnownId = 0;
+  let initialLoaded = false;
+  let currentViolationsMap = {};
+
+  // Digital Clock
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('live-clock').textContent = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' | ' + now.toLocaleTimeString();
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  function loadStats() {
+    fetch('/stats').then(r => r.json()).then(s => {
+      document.getElementById('stat-total').textContent = s.total || 0;
+      document.getElementById('stat-no-helmet').textContent = s.no_helmet || 0;
+      document.getElementById('stat-triple').textContent = s.triple_riding || 0;
+      document.getElementById('stat-wrong-way').textContent = s.wrong_way || 0;
+    }).catch(e => console.warn(e));
+  }
+
+  function refreshStatus() {
+    fetch('/status').then(r => r.json()).then(s => {
+      const badge = document.getElementById('video-live-status');
+      const placeholder = document.getElementById('idle-placeholder');
+      const streamImg = document.getElementById('video-stream-img');
+      if (s.running) {
+        badge.style.display = 'flex';
+        placeholder.style.display = 'none';
+        streamImg.style.display = 'block';
+        if (s.video) document.getElementById('cam-badge-label').textContent = s.video.toUpperCase();
+      } else {
+        badge.style.display = 'none';
+      }
+    }).catch(e => console.warn(e));
+  }
+
+  function handleStreamError(img) {
+    img.style.display = 'none';
+    document.getElementById('idle-placeholder').style.display = 'flex';
+  }
+
+  function getBadgeClass(vStr) {
+    if (vStr.includes('WRONG WAY')) return 'wrong-way';
+    if (vStr.includes('TRIPLE')) return 'triple';
+    return 'no-helmet';
+  }
+
+  function buildViolationCard(v) {
+    currentViolationsMap[v.id] = v;
+    const screenshot = v.screenshot
+      ? `/static/screenshots/${v.screenshot}`
+      : '';
+    const plate = v.plate && v.plate !== 'UNKNOWN' ? v.plate : 'UNREADABLE';
+    const badgeClass = getBadgeClass(v.violation);
+
+    return `
+      <div class="v-card" id="vcard-${v.id}">
+        ${screenshot ? `<img class="v-thumb" src="${screenshot}" alt="Evidence Thumbnail"/>` : ''}
+        <div class="v-body">
+          <div class="v-badge-group">
+            <span class="v-badge ${badgeClass}">${v.violation}</span>
+          </div>
+          <div class="v-plate-row">
+            <span class="v-plate">${plate}</span>
+            <span class="v-fine">₹${(v.fine||0).toLocaleString('en-IN')}</span>
+          </div>
+          <div class="v-meta">
+            <span>👤 ${v.owner_name||'Unknown'}</span>
+            <span>${v.timestamp.split(' ')[1] || ''}</span>
+          </div>
+          <div class="v-actions">
+            <button class="btn-v-action btn-v-detail" onclick="openDetailModal(${v.id})">🔍 EVIDENCE</button>
+            <button class="btn-v-action btn-v-paid ${v.paid ? 'is-paid' : ''}" id="paid-${v.id}"
+              onclick="togglePaid(${v.id}, ${v.paid ? 1 : 0})">
+              ${v.paid ? '✅ PAID' : '💳 MARK PAID'}
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function loadViolations() {
+    const url = initialLoaded ? `/violations?since=${maxKnownId}` : '/violations';
+    fetch(url).then(r => r.json()).then(data => {
+      if (!data) return;
+      const feed = document.getElementById('violations-list');
+      const emptyState = document.getElementById('feed-empty-state');
+
+      if (!initialLoaded) {
+        if (data.length === 0) {
+          if (emptyState) emptyState.style.display = 'block';
+        } else {
+          if (emptyState) emptyState.style.display = 'none';
+          feed.innerHTML = data.map(buildViolationCard).join('');
+          maxKnownId = Math.max(...data.map(v => v.id));
+        }
+        document.getElementById('alerts-count-badge').textContent = `${data.length} NEW`;
+        initialLoaded = true;
+        return;
+      }
+
+      if (data.length === 0) return;
+      if (emptyState) emptyState.style.display = 'none';
+
+      [...data].reverse().forEach(v => {
+        if (v.id <= maxKnownId) return;
+        const div = document.createElement('div');
+        div.innerHTML = buildViolationCard(v);
+        feed.prepend(div.firstElementChild);
+        maxKnownId = Math.max(maxKnownId, v.id);
+      });
+      document.getElementById('alerts-count-badge').textContent = `${feed.children.length} NEW`;
+      loadStats();
+    }).catch(e => console.warn(e));
+  }
+
+  function togglePaid(id, currentPaid) {
+    if (currentPaid === 1) return;
+    fetch(`/violation/${id}/paid`, { method: 'PATCH' })
+      .then(r => r.json())
+      .then(d => {
+        if (d.status === 'ok') {
+          const btn = document.getElementById(`paid-${id}`);
+          if (btn) {
+            btn.textContent = '✅ PAID';
+            btn.classList.add('is-paid');
+            btn.onclick = null;
+          }
+        }
+      });
+  }
+
+  function startSelectedVideo() {
+    const sel = document.getElementById('video-select');
+    const val = sel.value;
+    if (!val) { alert('Please select a video file first'); return; }
+    fetch(`/start/${encodeURIComponent(val)}`)
+      .then(r => r.json())
+      .then(d => {
+        refreshStatus();
+        const img = document.getElementById('video-stream-img');
+        img.src = `/video_feed?t=${Date.now()}`;
+        img.style.display = 'block';
+        document.getElementById('idle-placeholder').style.display = 'none';
+      });
+  }
+
+  function stopVideo() {
+    fetch('/stop').then(r => r.json()).then(d => {
+      refreshStatus();
+      document.getElementById('video-stream-img').style.display = 'none';
+      document.getElementById('idle-placeholder').style.display = 'flex';
+    });
+  }
+
+  /* Modal functions */
+  function openAddCameraModal() { document.getElementById('add-cam-modal').classList.add('active'); }
+  function closeAddCameraModal() { document.getElementById('add-cam-modal').classList.remove('active'); }
+
+  function submitAddCamera() {
+    const source = document.getElementById('cam-source-input').value.trim();
+    const label = document.getElementById('cam-label-input').value.trim() || 'Camera';
+    if (!source) return;
+    fetch('/camera/add', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({source, label})
+    }).then(r => r.json()).then(d => {
+      closeAddCameraModal();
+      refreshStatus();
+    });
+  }
+
+  function openUploadModal() { document.getElementById('upload-modal').classList.add('active'); }
+  function closeUploadModal() { document.getElementById('upload-modal').classList.remove('active'); }
+
+  function fileSelected(input) {
+    if (input.files && input.files[0]) {
+      document.getElementById('file-chosen-text').textContent = 'Selected: ' + input.files[0].name;
+    }
+  }
+
+  function submitUploadVideo() {
+    const fileInput = document.getElementById('upload-file-input');
+    if (!fileInput.files || fileInput.files.length === 0) {
+      alert('Please select a video file to upload'); return;
+    }
+    const statusDiv = document.getElementById('upload-status-text');
+    statusDiv.textContent = 'Uploading traffic video...';
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    fetch('/upload', { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(d => {
+        if (d.status === 'success') {
+          statusDiv.textContent = '✅ Upload complete! Refreshing feed options...';
+          setTimeout(() => {
+            closeUploadModal();
+            location.reload();
+          }, 800);
+        } else {
+          statusDiv.textContent = '❌ Error: ' + (d.error || 'Upload failed');
+        }
+      })
+      .catch(e => statusDiv.textContent = '❌ Upload failed');
+  }
+
+  function openDetailModal(id) {
+    const v = currentViolationsMap[id];
+    if (!v) return;
+    document.getElementById('modal-ev-img').src = v.screenshot ? `/static/screenshots/${v.screenshot}` : '';
+    document.getElementById('modal-v-type').textContent = v.violation;
+    document.getElementById('modal-v-plate').textContent = v.plate || 'UNREADABLE';
+    document.getElementById('modal-v-owner').textContent = v.owner_name || 'Not Available';
+    document.getElementById('modal-v-fine').textContent = `₹${(v.fine||0).toLocaleString('en-IN')}`;
+    document.getElementById('modal-v-time').textContent = v.timestamp;
+    document.getElementById('modal-v-source').textContent = v.video || 'Main Stream';
+    document.getElementById('modal-challan-link').href = `/challan/${v.id}`;
+    
+    document.getElementById('detail-modal').classList.add('active');
+  }
+  function closeDetailModal() { document.getElementById('detail-modal').classList.remove('active'); }
+
+  setInterval(loadStats, 3000);
+  setInterval(loadViolations, 3000);
+  setInterval(refreshStatus, 3000);
+  loadStats();
+  loadViolations();
+  refreshStatus();
+</script>
+</body>
+</html>

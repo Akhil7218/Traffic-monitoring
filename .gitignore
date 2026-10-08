@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables
+.env
+
+# Database & Logs
+*.db
+*.db-journal
+*.log
+logs/
+
+# Temporary / Output Directories
+temp_repo/
+scratch/
+outputs/
+easyocr_models/
+.pytest_cache/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

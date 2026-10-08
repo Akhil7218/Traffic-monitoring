@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  traffic-sentinel:
+    build: .
+    container_name: traffic_sentinel_ai
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - HOST=0.0.0.0
+      - SECRET_KEY=sentinel-traffic-ai-secure-secret-key-2026
+      - ADMIN_PASSWORD=admin123
+    volumes:
+      - ./data:/app/data
+      - ./videos:/app/videos
+      - ./outputs:/app/outputs
+      - ./static/screenshots:/app/static/screenshots
+      - ./static/challans:/app/static/challans
+      - ./violations.db:/app/violations.db
+    restart: unless-stopped

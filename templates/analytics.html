@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TrafficSentinel AI — Traffic Analytics Command</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-main:     #070a0f;
+    --card-bg:     #0d1420;
+    --border:      rgba(0, 229, 255, 0.15);
+    --border-bright:#00e5ff;
+    --accent-cyan: #00e5ff;
+    --accent-blue: #0066ff;
+    --red-viol:    #ff2d55;
+    --orange-viol: #ff9f0a;
+    --green-status:#00ff88;
+    --text-primary:#f1f5f9;
+    --text-muted:  #64748b;
+    --font-sans:   'Outfit', sans-serif;
+    --font-mono:   'Share Tech Mono', monospace;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content:''; position:fixed; inset:0;
+    background:
+      linear-gradient(0deg, transparent 24px, rgba(0, 229, 255, 0.015) 25px),
+      linear-gradient(90deg, transparent 24px, rgba(0, 229, 255, 0.015) 25px);
+    background-size: 25px 25px;
+    pointer-events:none; z-index:9999;
+  }
+
+  /* ── LAYOUT ── */
+  .app-container {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: rgba(10, 15, 24, 0.95);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 0.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .brand-logo-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(0, 102, 255, 0.2));
+    border: 1px solid var(--accent-cyan);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+  }
+
+  .brand-logo-icon svg { width: 20px; height: 20px; fill: var(--accent-cyan); }
+
+  .brand-name { font-size: 1.1rem; font-weight: 800; letter-spacing: 1.5px; color: #fff; line-height: 1.2; }
+  .brand-name span { color: var(--accent-cyan); }
+  .brand-sub { font-size: 0.65rem; color: var(--text-muted); font-family: var(--font-mono); letter-spacing: 1px; }
+
+  .nav-menu { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 12px; padding: 0.75rem 1rem; border-radius: 10px;
+    color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: all 0.2s ease;
+  }
+  .nav-item svg { width: 18px; height: 18px; fill: currentColor; }
+  .nav-item:hover { color: var(--text-primary); background: rgba(0, 229, 255, 0.05); }
+  .nav-item.active { color: #000; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); font-weight: 700; box-shadow: 0 0 16px rgba(0, 229, 255, 0.3); }
+  .nav-item.active svg { fill: #000; }
+
+  /* ── MAIN WRAPPER ── */
+  .main-wrapper { display: flex; flex-direction: column; min-width: 0; }
+
+  /* Top Header */
+  .top-header {
+    height: 64px; border-bottom: 1px solid var(--border); background: rgba(13, 19, 29, 0.8); backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; position: sticky; top: 0; z-index: 90;
+  }
+  .header-breadcrumb { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); letter-spacing: 1px; }
+  .header-breadcrumb span { color: var(--accent-cyan); font-weight: 700; }
+
+  .btn-refresh {
+    padding: 6px 14px; border-radius: 6px; background: transparent; border: 1px solid var(--border-bright); color: var(--accent-cyan);
+    font-family: var(--font-mono); font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-refresh:hover { background: var(--accent-cyan); color: #000; }
+
+  /* Content Body */
+  .content-body { padding: 1.5rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .grid-1-2 { display: grid; grid-template-columns: 360px 1fr; gap: 1.5rem; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+  .analytics-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem 1.4rem;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.4); position: relative; overflow: hidden;
+  }
+  .analytics-card::before {
+    content:''; position: absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, var(--accent-cyan), transparent); opacity: 0.4;
+  }
+
+  .card-title-row {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;
+  }
+  .card-title { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #fff; }
+
+  .chart-box { position: relative; width: 100%; height: 260px; }
+
+  /* Table styling */
+  .table-responsive { overflow-x: auto; margin-top: 0.5rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th {
+    text-align: left; padding: 10px 14px; font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted);
+    border-bottom: 1px solid var(--border); background: rgba(7, 10, 15, 0.6);
+  }
+  td { padding: 12px 14px; border-bottom: 1px solid rgba(28,42,58,0.4); }
+  tr:hover td { background: rgba(0,229,255,0.02); }
+
+  .plate-tag {
+    font-family: var(--font-mono); font-weight: 700; color: var(--accent-cyan);
+    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.25);
+    padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; display: inline-block;
+  }
+
+  .count-tag {
+    font-family: var(--font-mono); font-weight: 700; color: var(--red-viol);
+    background: rgba(255,45,85,0.12); border: 1px solid rgba(255,45,85,0.3);
+    padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;
+  }
+
+  @media (max-width: 1200px) {
+    .app-container { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .grid-1-2, .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">TRAFFIC <span>MONITORING</span></div>
+        <div class="brand-sub">AI COMMAND CENTER</div>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <a class="nav-item" href="/">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item active" href="/analytics">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2v-10h2v10zm4 0h-2v-4h2v4z"/></svg>
+        Analytics
+      </a>
+      <a class="nav-item" href="/citizen">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        Citizen Portal
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="header-breadcrumb">
+        SYSTEM / <span>ANALYTICS & ENFORCEMENT METRICS</span>
+      </div>
+      <button class="btn-refresh" onclick="loadData()">🔄 Refresh Analytics</button>
+    </header>
+
+    <main class="content-body">
+      <!-- Section 1 -->
+      <div class="grid-1-2">
+        <div class="analytics-card">
+          <div class="card-title-row">
+            <div class="card-title">Violation Distribution</div>
+          </div>
+          <div class="chart-box">
+            <canvas id="typeChart"></canvas>
+          </div>
+        </div>
+
+        <div class="analytics-card">
+          <div class="card-title-row">
+            <div class="card-title">Daily Violation Volume (Last 7 Days)</div>
+          </div>
+          <div class="chart-box">
+            <canvas id="dailyChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2 -->
+      <div class="grid-2">
+        <div class="analytics-card">
+          <div class="card-title-row">
+            <div class="card-title">Fine Collection Trend (₹)</div>
+          </div>
+          <div class="chart-box">
+            <canvas id="finesChart"></canvas>
+          </div>
+        </div>
+
+        <div class="analytics-card">
+          <div class="card-title-row">
+            <div class="card-title">Peak Traffic Violation Hours</div>
+          </div>
+          <div class="chart-box">
+            <canvas id="hourlyChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Repeat Offenders Table -->
+      <div class="analytics-card">
+        <div class="card-title-row">
+          <div class="card-title">Top Repeat Offenders</div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>License Plate</th>
+                <th>Registered Owner</th>
+                <th>Offence Count</th>
+                <th>Violation Types</th>
+                <th>Total Accumulated Fine</th>
+              </tr>
+            </thead>
+            <tbody id="top-plates-body">
+              <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:2rem;">Loading offender analytics...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+let charts = {};
+
+function initCharts() {
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#64748b', font: { family: 'Outfit', size: 12 } } }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(0, 229, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: 'Share Tech Mono' } } },
+      y: { grid: { color: 'rgba(0, 229, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: 'Share Tech Mono' } } }
+    }
+  };
+
+  charts.type = new Chart(document.getElementById('typeChart'), {
+    type: 'doughnut',
+    data: { labels: [], datasets: [{ data: [], backgroundColor: ['#ff2d55', '#ff9f0a', '#00e5ff', '#bf5af2'] }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#f1f5f9' } } } }
+  });
+
+  charts.daily = new Chart(document.getElementById('dailyChart'), {
+    type: 'bar',
+    data: { labels: [], datasets: [{ label: 'Violations Detected', data: [], backgroundColor: 'rgba(0, 229, 255, 0.6)', borderColor: '#00e5ff', borderWidth: 1 }] },
+    options: chartDefaults
+  });
+
+  charts.fines = new Chart(document.getElementById('finesChart'), {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Fine Total (₹)', data: [], borderColor: '#00ff88', backgroundColor: 'rgba(0, 255, 136, 0.08)', fill: true, tension: 0.3 }] },
+    options: chartDefaults
+  });
+
+  charts.hourly = new Chart(document.getElementById('hourlyChart'), {
+    type: 'bar',
+    data: { labels: [], datasets: [{ label: 'Hourly Incidents', data: [], backgroundColor: 'rgba(255, 159, 10, 0.6)', borderColor: '#ff9f0a', borderWidth: 1 }] },
+    options: chartDefaults
+  });
+}
+
+function loadData() {
+  fetch('/analytics_data')
+    .then(r => r.json())
+    .then(d => {
+      charts.type.data.labels = Object.keys(d.by_type || {});
+      charts.type.data.datasets[0].data = Object.values(d.by_type || {});
+      charts.type.update();
+
+      charts.daily.data.labels = (d.daily || []).map(x => x.date);
+      charts.daily.data.datasets[0].data = (d.daily || []).map(x => x.count);
+      charts.daily.update();
+
+      charts.fines.data.labels = (d.daily_fines || []).map(x => x.date);
+      charts.fines.data.datasets[0].data = (d.daily_fines || []).map(x => x.total);
+      charts.fines.update();
+
+      const hours = Array.from({length: 24}, (_, i) => `${i}:00`);
+      const hData = new Array(24).fill(0);
+      (d.hourly || []).forEach(x => hData[x.hour] = x.count);
+      charts.hourly.data.labels = hours;
+      charts.hourly.data.datasets[0].data = hData;
+      charts.hourly.update();
+
+      const tbody = document.getElementById('top-plates-body');
+      if (!d.top_plates || d.top_plates.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:2rem;">No offender data logged yet.</td></tr>';
+      } else {
+        tbody.innerHTML = d.top_plates.map((p, idx) => `
+          <tr>
+            <td>#${idx + 1}</td>
+            <td><span class="plate-tag">${p.plate}</span></td>
+            <td>${p.owner || 'Not Available'}</td>
+            <td><span class="count-tag">${p.count} Offences</span></td>
+            <td style="color:var(--text-muted); font-size:0.8rem;">${p.violations}</td>
+            <td style="color:#ffd60a; font-family:var(--font-mono); font-weight:700;">₹${p.total_fine.toLocaleString('en-IN')}</td>
+          </tr>
+        `).join('');
+      }
+    })
+    .catch(e => console.warn(e));
+}
+
+initCharts();
+loadData();
+</script>
+</body>
+</html>

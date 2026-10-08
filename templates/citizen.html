@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrafficSentinel AI — Public Citizen Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #070a0f;
+      --bg-card: #0d1420;
+      --bg-card-hover: #131c2d;
+      --border-color: rgba(0, 229, 255, 0.12);
+      --border-glow: rgba(0, 229, 255, 0.3);
+      --accent-cyan: #00e5ff;
+      --accent-blue: #0066ff;
+      --accent-green: #00e676;
+      --accent-orange: #ff9100;
+      --accent-red: #ff3d71;
+      --text-main: #f0f4f8;
+      --text-muted: #7e8b9b;
+      --glass-bg: rgba(13, 20, 32, 0.85);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 229, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(0, 102, 255, 0.05) 0%, transparent 40%),
+        linear-gradient(to right, rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    }
+
+    /* Top Navigation Header */
+    header {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+      height: 68px;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,102,255,0.2));
+      border: 1px solid var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(0,229,255,0.2);
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+
+    .brand-title span {
+      color: var(--accent-cyan);
+    }
+
+    .brand-badge {
+      font-size: 0.65rem;
+      background: rgba(0,229,255,0.1);
+      color: var(--accent-cyan);
+      border: 1px solid var(--border-color);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .btn-dashboard-back {
+      background: rgba(0, 229, 255, 0.08);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+    }
+
+    .btn-dashboard-back:hover {
+      background: rgba(0, 229, 255, 0.2);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-admin-login {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #000;
+      font-weight: 700;
+      border: none;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+    }
+
+    .btn-admin-login:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+    }
+
+    /* Main Content Wrapper */
+    .container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      flex: 1;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(13, 20, 32, 0.9), rgba(7, 10, 15, 0.95));
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      background: rgba(0,229,255,0.08);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(0,229,255,0.2);
+    }
+
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, var(--accent-cyan), #ffffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 650px;
+      line-height: 1.6;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,229,255,0.08);
+    }
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .stat-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(0, 229, 255, 0.08);
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Search Section */
+    .search-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .search-wrapper {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .search-input-container {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-input-container svg {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(7, 10, 15, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.9rem 1rem 0.9rem 3rem;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(0,229,255,0.15);
+    }
+
+    .btn-search {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #000;
+      font-weight: 700;
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .btn-search:hover {
+      box-shadow: 0 0 20px rgba(0,229,255,0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Table Container */
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .table-header-title {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .table-header-title h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: rgba(7, 10, 15, 0.6);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 1rem 1.5rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 1rem 1.5rem;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    .plate-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      background: rgba(0, 229, 255, 0.08);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    .status-paid {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent-green);
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: rgba(0, 230, 118, 0.08);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 230, 118, 0.2);
+    }
+
+    .status-pending {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent-orange);
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: rgba(255, 145, 0, 0.08);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 145, 0, 0.2);
+    }
+
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      background: rgba(7, 10, 15, 0.8);
+      margin-top: 3rem;
+    }
+
+    @media (max-width: 768px) {
+      .search-wrapper { flex-direction: column; }
+      .btn-search { width: 100%; }
+      header { padding: 0 1rem; }
+      .brand-badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="/citizen">
+    <div class="brand-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div class="brand-title">TRAFFIC <span>MONITORING</span></div>
+    <div class="brand-badge">CITIZEN PORTAL</div>
+  </a>
+
+  <div class="nav-actions">
+    <a href="/" class="btn-nav btn-dashboard-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Dashboard
+    </a>
+    <a href="/login" class="btn-nav btn-admin-login">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Officer Login
+    </a>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Hero Section -->
+  <div class="hero-banner">
+    <div class="hero-tag">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Public Safety & Transparency
+    </div>
+    <h1 class="hero-title">E-Challan Verification & <span>Public Enforcement Portal</span></h1>
+    <p class="hero-subtitle">Check traffic violation status by vehicle registration number, review public safety metrics, and settle outstanding e-challans securely online.</p>
+  </div>
+
+  <!-- Public Statistics Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-title">Total Public Incidents</span>
+        <div class="stat-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+      </div>
+      <div class="stat-value" id="cstat-total">0</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-title">Total Fines Issued</span>
+        <div class="stat-icon" style="color: var(--accent-orange); background: rgba(255,145,0,0.08);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+      </div>
+      <div class="stat-value" id="cstat-fines">₹0</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-title">Fines Collected</span>
+        <div class="stat-icon" style="color: var(--accent-green); background: rgba(0,230,118,0.08);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+      </div>
+      <div class="stat-value" id="cstat-collected">₹0</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-title">Road Safety Fund</span>
+        <div class="stat-icon" style="color: var(--accent-cyan); background: rgba(0,229,255,0.08);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+      </div>
+      <div class="stat-value" id="cstat-pool">₹0</div>
+    </div>
+  </div>
+
+  <!-- Search Card -->
+  <div class="search-card">
+    <div class="search-wrapper">
+      <div class="search-input-container">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" id="plate-search" placeholder="Search by vehicle registration plate (e.g. TN09AB****)..." onkeyup="filterTable()"/>
+      </div>
+      <button class="btn-search" onclick="filterTable()">Search Vehicle</button>
+    </div>
+  </div>
+
+  <!-- Public Challan Table -->
+  <div class="table-card">
+    <div class="table-header-title">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-cyan);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Recent Public E-Challan Register
+      </h3>
+      <span style="font-size: 0.8rem; color: var(--text-muted);">Masked for privacy</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Challan Reference</th>
+          <th>Timestamp</th>
+          <th>Masked Plate</th>
+          <th>Violation Description</th>
+          <th>Fine Amount</th>
+          <th>Payment Status</th>
+        </tr>
+      </thead>
+      <tbody id="citizen-table-body">
+        <tr>
+          <td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted);">
+            Fetching latest public enforcement records...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  TrafficSentinel AI &copy; 2026. Next-Gen Intelligent Traffic Enforcement & Safety Platform.
+</footer>
+
+<script>
+let allViolations = [];
+
+function loadCitizenData() {
+  fetch('/citizen/stats')
+    .then(r => r.json())
+    .then(s => {
+      document.getElementById('cstat-total').textContent = (s.total_violations || 0).toLocaleString();
+      document.getElementById('cstat-fines').textContent = '₹' + (s.total_fines || 0).toLocaleString('en-IN');
+      document.getElementById('cstat-collected').textContent = '₹' + (s.fines_collected || 0).toLocaleString('en-IN');
+      document.getElementById('cstat-pool').textContent = '₹' + (s.incentive_pool || 0).toLocaleString('en-IN');
+    })
+    .catch(err => console.error("Error loading citizen stats:", err));
+
+  fetch('/citizen/violations')
+    .then(r => r.json())
+    .then(rows => {
+      allViolations = rows;
+      renderTable(rows);
+    })
+    .catch(err => console.error("Error loading citizen violations:", err));
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById('citizen-table-body');
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted);">No public records matching the query were found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><strong style="font-family: 'JetBrains Mono', monospace; color:#fff;">${r.challan}</strong></td>
+      <td style="color:var(--text-muted); font-size:0.85rem;">${r.timestamp}</td>
+      <td><span class="plate-badge">${r.plate}</span></td>
+      <td style="color:var(--accent-orange); font-weight:600;">${r.violation}</td>
+      <td style="font-weight:700; color:#fff;">₹${r.fine.toLocaleString('en-IN')}</td>
+      <td>${r.paid ? '<span class="status-paid">✅ PAID</span>' : '<span class="status-pending">⏳ PENDING</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+function filterTable() {
+  const query = document.getElementById('plate-search').value.trim().toUpperCase();
+  if (!query) {
+    renderTable(allViolations);
+    return;
+  }
+  const filtered = allViolations.filter(r =>
+    (r.plate && r.plate.toUpperCase().includes(query)) ||
+    (r.challan && r.challan.toUpperCase().includes(query)) ||
+    (r.violation && r.violation.toUpperCase().includes(query))
+  );
+  renderTable(filtered);
+}
+
+loadCitizenData();
+</script>
+</body>
+</html>
+
